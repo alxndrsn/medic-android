@@ -1,0 +1,47 @@
+<html>
+<head>
+	<script src="./pouchdb-6.0.7.min.js"></script>
+	<script src="./jquery-3.1.1.min.js"></script>
+</head>
+<body>
+	<div id="container">
+		<div>Status: <span id="current-status">Loading...</span></div>
+		<div id="info">
+			<h1>Info</h1>
+			<table>
+				<tr><td>info not loaded yet</td></tr>
+			</table>
+			<button class="update">Update</button>
+		</div>
+		<div id="doc-maker">
+			<h1>Doc Maker</h1>
+			<ol></ol>
+			<button class="create">Create</button>
+		</div>
+	</div>
+<script>
+$(function() {
+	function setStatus(status) {
+		var statusMessage = status + ' @ ' + new Date();
+		console.log('Setting status message to: ' + statusMessage);
+		$('#current-status').text(statusMessage);
+	}
+
+	$('#info button.update').click(function() {
+		setStatus('Updating info...');
+
+		var table = $('#info table');
+		table.clear();
+		table.append('<tr><td>Some info should appear here.</td></tr>');
+
+		setStatus('Info updated');
+	});
+	$('#doc-maker button.create').click(function() {
+		setStatus('Creating some docs in the DB...');
+		setStatus('Docs created.');
+	});
+	setStatus('loaded');
+});
+</script>
+</body>
+</html>
