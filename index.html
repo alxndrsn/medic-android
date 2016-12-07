@@ -3,6 +3,12 @@
 	<title>medic-android test page</title>
 	<script src="./pouchdb-6.0.7.min.js"></script>
 	<script src="./jquery-3.1.1.min.js"></script>
+	<style>
+		#container { margin: auto 10px; }
+		table { border: #999 solid 1px; }
+		table tr:nth-child(even) { background-color: #ccc; }
+		table td { padding: 2px }
+	</style>
 </head>
 <body>
 	<div id="container">
@@ -22,26 +28,62 @@
 	</div>
 <script>
 $(function() {
-	function setStatus(status) {
-		var statusMessage = status + ' @ ' + new Date();
-		console.log('Setting status message to: ' + statusMessage);
-		$('#current-status').text(statusMessage);
-	}
+  function setStatus(status) {
+    var statusMessage = '[' + new Date() + '] ' + status;
+    console.log('Setting status message to: ' + statusMessage);
+    $('#current-status').text(statusMessage);
+  }
 
-	$('#info button.update').click(function() {
-		setStatus('Updating info...');
+  var db = new PouchDB('test');
 
-		var table = $('#info table');
-		table.clear();
-		table.append('<tr><td>Some info should appear here.</td></tr>');
+  function put(count) {
+    return db.put({ _id:'generated-' + count })
+      .then(function() {
+        if(count) return put(count-1);
+      })
+      .catch(function(err) {
+        setStatus('Error while putting doc number ' + count + ': ' + err);
+      });
+  }
 
-		setStatus('Info updated');
-	});
-	$('#doc-maker button.create').click(function() {
-		setStatus('Creating some docs in the DB...');
-		setStatus('Docs created.');
-	});
-	setStatus('loaded');
+  $('#info button.update').click(function() {
+    setStatus('Updating info...');
+
+    var $table = $('#info table');
+    var appendRow = function() {
+      var rows = '';
+      var i = -1;
+      while(++i < arguments.length) rows += '<td>' + arguments[i] + '</td>';
+      $table.append('<tr>' + rows + '</tr>');
+    }
+
+    $table.empty();
+
+    db.info()
+      .then(function(result) {
+        var keys = Object.keys(result);
+        var i = keys.length;
+        while(--i > 0) {
+          var k = keys[i];
+          var v = result[k];
+          appendRow(k, v);
+        }
+      })
+      .catch(function(err) {
+        setStatus(err);
+      });
+
+    setStatus('Info updated');
+  });
+  $('#doc-maker button.create').click(function() {
+    setStatus('Creating some docs in the DB...');
+
+    put(10)
+      .then(function() {
+        setStatus('Docs created.');
+      });
+  });
+  setStatus('loaded');
 });
 </script>
 </body>
